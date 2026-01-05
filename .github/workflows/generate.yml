@@ -55,7 +55,6 @@ jobs:
 
     - name: Copy resources
       run: |
-#        cp ./googleb123456.html ./dist/
         cp ./manifest.json ./dist/
         cp ./favicon.ico ./dist/
         cp ./resources/icon-256.png ./dist/resources/
