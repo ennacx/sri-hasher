@@ -4,8 +4,9 @@ let sri;
 let sriTag;
 let extension;
 
-function getExtension(url) {
-	return url.pathname.split('.').pop();
+function getExtension(target) {
+	const name = (target instanceof URL) ? target.pathname : target;
+	return name.split('.').pop();
 }
 function validateURL(u) {
 	try {
@@ -56,7 +57,16 @@ async function probeCorsReadable(url) {
 	}
 }
 
+function validateFile(name) {
+	const ext = getExtension(name);
+	if(!ALLOWED_EXTENSIONS.includes(ext)){
+		return false;
+	}
 
+	extension = ext;
+
+	return true;
+}
 
 // WebCrypto: "SHA-384" -> SRI: "sha384-"
 function algoToSriPrefix(algo) {
@@ -127,6 +137,7 @@ $(() => {
 	const $errorAlert = $('#error-alert');
 	const $resultCard = $('#result');
 	const $urlForm = $('input[name="url"]');
+	const $uploadForm = $('input[name="upload-file"]')[0];
 
 	const showAlert = (msg) => {
 		$errorAlert.text(msg);
@@ -145,25 +156,45 @@ $(() => {
 		hideAlert();
 		$resultCard.hide();
 
-		const url = $urlForm.val().trim();
+		const url     = $urlForm.val().trim();
+		const file    = $uploadForm.files[0] ?? null;
 		const sriHash = $('select[name="sri-hash"] option:selected').val();
 
+		let mode;
 		let errMsg;
-		if(!url){
-			errMsg = 'URL is required';
-		} else if(!validateURL(url)){
-			errMsg = 'Invalid URL';
-		} else{
-			probeCorsReadable(url)
-				.then((res) => {
-					if(!res.readable){
-						errMsg = `Fetch failed: ${res.error.message}`;
-					}
-				})
-				.catch((e) => {
-					console.error(e);
-				})
-			;
+
+		if(url){
+			mode = 'fetch';
+		} else if(file?.size > 0){
+			mode = 'upload';
+		}
+		// 不正
+		else{
+			showAlert('URL or file is required');
+
+			return false;
+		}
+
+		if(mode === 'fetch'){
+			if(!validateURL(url)){
+				errMsg = 'Invalid URL or invalid file type';
+			} else{
+				probeCorsReadable(url)
+					.then((res) => {
+						if(!res.readable){
+							errMsg = `Fetch failed: ${res.error.message}`;
+						}
+					})
+					.catch((e) => {
+						console.error(e);
+					})
+				;
+			}
+		}
+		else if(mode === 'upload'){
+			if(!validateFile(file.name)){
+				errMsg = 'Invalid file type';
+			}
 		}
 
 		if(errMsg){
@@ -173,10 +204,19 @@ $(() => {
 		}
 
 		try {
-			const resBuffer = await fetchContent(url);
+			let resBuffer;
+			let src;
+
+			if(mode === 'fetch'){
+				resBuffer = await fetchContent(url);
+				src = url;
+			} else if(mode === 'upload'){
+				resBuffer = await file.arrayBuffer();
+				src = file.name;
+			}
 
 			sri = await sriFromArrayBuffer(resBuffer, sriHash);
-			sriTag = makeHtmlTag(url, sri);
+			sriTag = makeHtmlTag(src, sri);
 
 			$('#sri > pre').text(sri);
 			$('#sri-tag > pre').text(sriTag);
@@ -192,7 +232,6 @@ $(() => {
 	const copyBtnTimeoutIds = {};
 	$('button.copy-btn').click(function(){
 		const $this = $(this);
-		const $label = $this.find('i');
 		const attribute = $this.attr('id').replace(/^copy-/, '');
 
 		// 再度ボタンが有効化になるまでの時間 (ms)
@@ -210,14 +249,15 @@ $(() => {
 		copyToClipboard(text)
 			.then(() => {
 				const btnLabelHtml = $this.html();
+				const iFind = () => $this.find('i');
 
 				$this.prop('disabled', true);
 				$this.html('<i class="bi bi-check2"></i> Copied!');
-				$this.find('i').addClass('btn-fade');
+				iFind().addClass('btn-fade');
 
 				// 1秒後にフェードアウト開始
 				setTimeout(() => {
-					$this.find('i').addClass('fade-out');
+					iFind().addClass('fade-out');
 				}, enableDuration - 300); // 残り0.5秒でフェード開始
 
 				// 完全に消えたらリセット
@@ -228,8 +268,9 @@ $(() => {
 					copyBtnTimeoutIds[attribute] = null;
 				}, enableDuration);
 			})
-			.catch((err) => {
-				console.log(err);
+			.catch((e) => {
+				console.error(e);
+
 				window.alert("コピーに失敗しました。");
 			})
 		;
