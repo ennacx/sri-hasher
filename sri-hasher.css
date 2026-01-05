@@ -1,5 +1,14 @@
 @charset "UTF-8";
 @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Noto+Sans+JP:wght@100..900&display=swap");
+body {
+  margin: 16px auto;
+  background-color: #f9fafb;
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 0.93rem;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+}
+
 @media (min-width: 719.98px) {
   body {
     max-width: 720px;

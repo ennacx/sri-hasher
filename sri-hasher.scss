@@ -14,6 +14,17 @@ $footer_height: 36px;
 $default_font: "Noto Sans JP", sans-serif;
 $mono_font: "Atkinson Hyperlegible Mono", monospace;
 
+body {
+	margin: 16px auto;
+
+	background-color: $bg_color;
+	font-family: $default_font;
+	font-size: 0.93rem;
+	color: $font_color;
+
+	-webkit-font-smoothing: antialiased;
+}
+
 @media (min-width: 719.98px) {
 	body {
 		max-width: 720px;
