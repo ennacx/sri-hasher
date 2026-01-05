@@ -1,0 +1,158 @@
+@charset "UTF-8";
+
+// Google fonts "Noto Sans JP", "Atkinson Hyperlegible Mono"
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Noto+Sans+JP:wght@100..900&display=swap');
+
+// 既定色
+$bg_color: #f9fafb;
+$default_color: #2d8efd;
+$light_color: #4aa3f8;
+$dark_color: rgba(45, 142, 253, 0.35);
+$font_color: #111827;
+
+$footer_height: 36px;
+$default_font: "Noto Sans JP", sans-serif;
+$mono_font: "Atkinson Hyperlegible Mono", monospace;
+
+@media (min-width: 719.98px) {
+	body {
+		max-width: 720px;
+	}
+}
+
+a {
+	color: $default_color;
+	text-decoration: none;
+	cursor: pointer;
+
+	&:hover {
+		color: $light_color;
+	}
+}
+
+h1 {
+	margin-bottom: 8px;
+
+	a {
+		color: black;
+
+		&:hover{
+			color: black;
+		}
+	}
+}
+
+h2 {
+	margin-bottom: 16px;
+	font-size: 1.1rem;
+	color: green;
+}
+
+h3 {
+	font-size: 1.15rem;
+}
+
+h4 {
+	&.pre-title {
+		font-size: 0.88rem;
+	}
+}
+
+footer {
+	text-align: right;
+	font-size: 0.67rem;
+	border-top: 1px solid #eaeaea;
+	background-color: $bg_color;
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	color: #a5a5a5;
+
+	width: 100%;
+	height: $footer_height;
+	margin: 0;
+	padding: 8px .88%;
+
+	position: fixed;
+	bottom: 0;
+	left: 0;
+
+	p {
+		i {
+			margin-right: 6px;
+		}
+	}
+
+	.disclaimer {
+		color: #aaaacc;
+
+		// 表示はしない
+		p {
+			display: none;
+		}
+	}
+
+	ul.copy-links {
+		list-style: none;
+
+		& li {
+			padding: 0 4px;
+
+			&:not(:first-child) {
+				border-left: 1px solid #a5a5a5;
+			}
+
+			a {
+				text-decoration: none;
+			}
+
+			a:hover {
+				color: #6585ff;
+			}
+
+			i {
+				margin-right: 4px;
+			}
+		}
+	}
+}
+
+/* iOS Safari限定フォールバック */
+@supports (-webkit-backdrop-filter: none) {
+	footer {
+		-webkit-backdrop-filter: blur(4px);
+		backdrop-filter: blur(4px);
+	}
+
+	.form-control {
+		&:focus {
+			box-shadow: 0 0 3px $dark_color;
+		}
+	}
+}
+
+#subheader {
+	margin-bottom: 24px;
+
+	p {
+		font-size: 0.78rem;
+		color: #878787;
+	}
+}
+
+#content {
+	padding-bottom: $footer_height + 16px !important;
+
+	input#url::placeholder {
+		color: #d5d8db;
+	}
+}
+
+pre {
+	&.result-mono {
+		background: #eee;
+		padding: 1rem;
+		font-family: $mono_font system-ui monospace;
+		white-space: pre-wrap;
+		word-break: break-all;
+	}
+}
