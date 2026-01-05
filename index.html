@@ -43,7 +43,7 @@
 
 <body>
     <main id="content" class="container-fluid">
-        <div id="form">
+        <fieldset id="form-field">
             <h1><a href="./">🛡️ Integrity SRI Hasher</a></h1>
             <h2>CDNサブリソース完全性のハッシュを生成</h2>
 
@@ -54,10 +54,12 @@
                 </p>
             </div>
 
-            <fieldset id="form-field">
+            <div>
                 <div class="form-group">
                     <label for="url">URL</label>
-                    <input type="text" name="url" id="url" class="form-control" placeholder="https://cdn.example.com/index.min.js" autocomplete="off" />
+                    <input type="text" name="url" id="url" class="form-control" placeholder="https://cdn.example.com/index.min.js" autocomplete="off"
+                           value="https://code.jquery.com/jquery-3.7.1.min.js"
+                    />
                 </div>
                 <div class="form-group mt-2">
                     <label for="sri-hash">Hash</label>
@@ -70,32 +72,34 @@
                 <div class="mt-2">
                     <button type="button" name="generate-hash" id="generate-hash" class="btn btn-sm btn-primary w-100">Hash</button>
                 </div>
-            </fieldset>
+            </div>
 
-            <fieldset id="result-field" class="mt-3">
+            <div id="result-field" class="mt-3">
                 <div id="result" class="card" style="display: none;">
                     <div class="card-header">Result</div>
                     <div class="card-body">
                         <div id="sri">
                             <pre class="result-mono"></pre>
-                            <button type="button" name="copy-sri" id="copy-sri" class="w-100 btn btn-sm btn-outline-primary"><i class="bi bi-copy me-2"></i>Copy SRI</button>
+                            <button type="button" name="copy-sri" id="copy-sri" class="w-100 btn btn-sm btn-outline-primary copy-btn"><i class="bi bi-copy me-2"></i>Copy SRI</button>
                         </div>
                         <div id="sri-tag" class="mt-4">
                             <pre class="result-mono"></pre>
-                            <button type="button" name="copy-sri-tag" id="copy-sri-tag" class="w-100 btn btn-sm btn-outline-primary"><i class="bi bi-copy me-2"></i>Copy SRI Tag</button>
+                            <button type="button" name="copy-sri-tag" id="copy-sri-tag" class="w-100 btn btn-sm btn-outline-primary copy-btn"><i class="bi bi-copy me-2"></i>Copy SRI Tag</button>
                         </div>
                     </div>
                 </div>
 
                 <div id="error-alert" class="alert alert-danger" role="alert" style="display: none;"></div>
-            </fieldset>
-        </div>
+            </div>
+        </fieldset>
+
+        <fieldset id="readme-field"></fieldset>
     </main>
 
     <!-- フッター -->
     <footer class="d-flex">
         <div class="disclaimer">
-            <p>このツールはブラウザ上でSRIのハッシュ値を生成します。生成されたすべては保存されず、すべてローカル処理で行われます。</p>
+            <p>このツールはブラウザ上でCDNコンテンツを取得し、SRIのハッシュ値を生成します。生成されたすべては保存されず、すべてローカル処理で行われます。</p>
             <p>なお、本ツールの使用によりトラブルが発生した場合、私たちは一切の責任を負いません。</p>
         </div>
         <div class="ms-auto">
