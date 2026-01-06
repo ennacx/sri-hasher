@@ -75,7 +75,7 @@
                     </div>
                     <div id="mode-upload-tab-pane" class="tab-pane fade">
                         <div class="form-group">
-                            <label for="upload-file">Upload the resource you want to use:</label>
+                            <label for="upload-file">Upload the resource file you want to use:</label>
                             <input type="file" name="upload-file" id="upload-file" class="form-control" />
                         </div>
                     </div>
@@ -91,6 +91,10 @@
 
                     <div class="mt-2">
                         <button type="button" name="generate-hash" id="generate-hash" class="btn btn-sm btn-primary w-100">Hash</button>
+                    </div>
+
+                    <div class="mt-2">
+                        <p class="allow-ext">Support formats:&ensp;<span class="ext"></span></p>
                     </div>
                 </div>
             </div>
@@ -120,8 +124,14 @@
     <!-- フッター -->
     <footer class="d-flex">
         <div class="disclaimer">
-            <p>このツールはブラウザ上でCDNコンテンツを取得し、SRIのハッシュ値を生成します。生成されたすべては保存されず、すべてローカル処理で行われます。</p>
-            <p>なお、本ツールの使用によりトラブルが発生した場合、私たちは一切の責任を負いません。</p>
+            <p>
+                このツールはブラウザ上でCDNコンテンツを取得し、SRIのハッシュ値を生成します。生成されたすべては保存されず、すべてローカル処理で行われます。<br>
+                なお、本ツールの使用によりトラブルが発生した場合、私たちは一切の責任を負いません。
+            </p>
+            <p>
+                This tool retrieves CDN content on your browser and generates an SRI hash value. None of the generated data is stored; it is processed locally.<br>
+                Please note that we are not responsible for any problems that may arise from using this tool.
+            </p>
         </div>
         <div class="ms-auto">
             <ul class="list-group list-group-horizontal copy-links">

@@ -23,6 +23,14 @@ a:hover {
   color: #4aa3f8;
 }
 
+pre.result-mono {
+  background: #eee;
+  padding: 1rem;
+  font-family: "Atkinson Hyperlegible Mono", monospace system-ui monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 h1 {
   margin-bottom: 8px;
 }
@@ -126,12 +134,8 @@ footer ul.copy-links li i {
   padding: 16px 8px 8px;
 }
 
-pre.result-mono {
-  background: #eee;
-  padding: 1rem;
-  font-family: "Atkinson Hyperlegible Mono", monospace system-ui monospace;
-  white-space: pre-wrap;
-  word-break: break-all;
+.mono-font {
+  font-family: "Atkinson Hyperlegible Mono", monospace;
 }
 
 /*# sourceMappingURL=sri-hasher.css.map */

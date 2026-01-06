@@ -152,6 +152,9 @@ $(() => {
 	const $urlForm = $('input[name="url"]');
 	const $uploadForm = $('input[name="upload-file"]')[0];
 
+	$('input[name="upload-file"]').attr('accept', ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(','));
+	$('p.allow-ext > span.ext').html(`<span class="mono-font">${ALLOWED_EXTENSIONS.join(',')}</span>`);
+
 	const showAlert = (msg) => {
 		$errorAlert.text(msg);
 		$errorAlert.show();
@@ -266,16 +269,16 @@ $(() => {
 		copyToClipboard(text)
 			.then(() => {
 				const btnLabelHtml = $this.html();
-				const iFind = () => $this.find('i');
+				const $iFind = () => $this.find('i');
 
 				$this.prop('disabled', true);
 				$this.html('<i class="bi bi-check2"></i> Copied!');
-				iFind().addClass('btn-fade');
+				$iFind().addClass('btn-fade');
 
 				// 1秒後にフェードアウト開始
 				setTimeout(() => {
-					iFind().addClass('fade-out');
-				}, enableDuration - 300); // 残り0.5秒でフェード開始
+					$iFind().addClass('fade-out');
+				}, enableDuration - 300); // 残り0.3秒でフェード開始
 
 				// 完全に消えたらリセット
 				copyBtnTimeoutIds[attribute] = setTimeout(() => {

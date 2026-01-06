@@ -41,6 +41,16 @@ a {
 	}
 }
 
+pre {
+	&.result-mono {
+		background: #eee;
+		padding: 1rem;
+		font-family: $mono_font system-ui monospace;
+		white-space: pre-wrap;
+		word-break: break-all;
+	}
+}
+
 h1 {
 	margin-bottom: 8px;
 
@@ -175,12 +185,6 @@ footer {
 	}
 }
 
-pre {
-	&.result-mono {
-		background: #eee;
-		padding: 1rem;
-		font-family: $mono_font system-ui monospace;
-		white-space: pre-wrap;
-		word-break: break-all;
-	}
+.mono-font {
+	font-family: $mono_font;
 }
