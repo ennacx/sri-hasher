@@ -34,6 +34,10 @@ jobs:
         mkdir -p ./dist
         mkdir -p ./dist/resources
 
+    - name: Generate Google search console file
+      run: |
+        echo "google-site-verification: googleb95e7dd5d4aa5997.html" > ./dist/googleb95e7dd5d4aa5997.html
+
     - name: Generate service worker with git hash
       run: |
         GIT_HASH=$(git rev-parse --short HEAD)
