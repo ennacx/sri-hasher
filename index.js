@@ -4,7 +4,6 @@
  * Properties:
  * - `js`: Defines the template for JavaScript resources, including attributes for source, integrity, and crossorigin.
  * - `css`: Defines the template for CSS resources, including attributes for source, integrity, and crossorigin.
- * - `wasm`: Defines the template for WebAssembly resources using JavaScript modules, including attributes for source, integrity, and crossorigin.
  *
  * Each template uses placeholders (`{{source}}`, `{{sri}}`) for dynamic values to be replaced at runtime.
  */
@@ -14,9 +13,6 @@ const EXT_MASTER = {
 	},
 	css: {
 		tag: '<link rel="stylesheet" href="{{source}}" integrity="{{sri}}" crossorigin="anonymous">'
-	},
-	wasm: {
-		tag: '<script type="module" src="{{source}}" integrity="{{sri}}" crossorigin="anonymous"></script>'
 	}
 };
 
@@ -44,6 +40,17 @@ const sriSet = {
 };
 
 /**
+ * An object that represents validation settings and properties.
+ *
+ * @property {boolean} isValid - Indicates whether the validation has passed or not. Defaults to false.
+ * @property {string|undefined} extension - Represents the file extension or additional information for validation. Can be undefined if not specified.
+ */
+const validationSet = {
+	isValid: false,
+	extension: undefined
+};
+
+/**
  * Initializes the `sriSet` object by setting all its properties to `undefined`.
  * This method iterates over each property of the `sriSet` object and resets its value.
  *
@@ -56,47 +63,99 @@ function initSriSet() {
 }
 
 /**
- * Extracts and returns the file extension from the given target.
- *  - If the target is a URL object, it retrieves the pathname from the URL.
- *  - If the target is a string, it processes the string directly.
+ * Extracts the file extension from the given target, which can be a string or a URL object.
  *
- * The extracted extension is converted to lowercase.
- *
- * @param {URL|string} target - The target object or string to extract the file extension from. It can be a URL object or a string representing a file path.
- * @return {string} The extracted file extension in lowercase. Returns an empty string if no extension is found.
+ * @param {string | URL} target - The target from which to extract the file extension. This can be a string representing a file path, or a URL object.
+ * @return {string} The file extension if found (in lowercase), or an empty string if no valid extension is present.
  */
 function getExtension(target) {
-	const name = (target instanceof URL) ? target.pathname : target;
 
-	return name.split('.').pop().toLowerCase();
+	/**
+	 * Extracts and returns the extension part of a given string, typically used to retrieve file extensions.
+	 * If the input string does not contain a period (.), an empty string is returned.
+	 *
+	 * @param {string} str - The input string from which the extension is to be extracted.
+	 * @returns {string} The extracted extension in lowercase, or an empty string if no extension exists.
+	 */
+	const yieldExt = (str) => {
+		const s = str ?? '';
+		if(!s.includes('.')){
+			return '';
+		}
+
+		return s.split('.').pop().toLowerCase();
+	}
+
+	if(target instanceof URL){
+		const path = target.pathname;
+		const queries = target.searchParams;
+		const last = path.split('/').pop();
+		if(!last){
+			return '';
+		} else if(last.includes('.')){
+			// pathname優先で`/download?file=lib.js`のようにGETクエリにつかない場合
+			const fromPath = yieldExt(last);
+			if(fromPath && fromPath !== path.toLowerCase()){
+				return fromPath;
+			}
+		} else{
+			// クエリの許可キー名から取得を試みる
+			const allowedKeys = ['file', 'filename'];
+
+			let candidate;
+			for(const k of allowedKeys){
+				candidate = queries.get(k);
+				if(candidate){
+					break;
+				}
+			}
+
+			if(candidate){
+				return yieldExt(candidate);
+			}
+		}
+
+		return '';
+	} else if(typeof target === 'string'){
+		return yieldExt(target);
+	}
+
+	return '';
 }
 
 /**
- * Validates a given URL to ensure it has a proper protocol and allowed extension.
+ * Validates a given URL and checks for its protocol and allowed extensions.
  *
- * @param {string} u - The URL to validate.
- * @return {boolean} Returns true if the URL is valid and meets the specified conditions; otherwise, false.
+ * @param {string} u - The URL string to be validated.
+ * @return {Object} An object containing the validation results:
+ *  - isValid: A boolean indicating whether the URL is valid.
+ *  - extension: The file extension of the URL, if valid.
  */
 function validateURL(u) {
+	const ret = structuredClone(validationSet);
+
 	try {
 		const url = new URL(u);
 		if(!url.protocol.match(/^https?:$/)){
-			return false;
+			ret.isValid = false;
 		} else{
 			const ext = getExtension(url);
 			if(!ALLOWED_EXTENSIONS.includes(ext)){
-				return false;
+				ret.isValid = false;
+
+				return ret;
 			}
 
-			sriSet.extension = ext;
+			ret.isValid = true;
+			ret.extension = ext;
 		}
-
-		return true;
 	} catch(e){
 		console.error(e);
 
-		return false;
+		ret.isValid = false;
 	}
+
+	return ret;
 }
 
 /**
@@ -147,25 +206,34 @@ async function probeCorsReadable(url) {
 }
 
 /**
- * Validates the given file to ensure it meets certain criteria.
+ * Validates a file object to ensure it meets certain criteria.
  *
  * @param {Object} file - The file object to be validated.
- * @param {string} file.name - The name of the file to extract the extension.
- * @return {boolean} Returns true if the file is valid, otherwise false.
+ * @param {string} file.name - The name of the file, used to check its extension.
+ * @return {Object} An object containing the validation result:
+ * - `isValid` {boolean} - Indicates if the file is valid.
+ * - `extension` {string} [optional] - The file extension if the file is valid.
  */
 function validateFile(file) {
+	const ret = structuredClone(validationSet);
+
 	if(!file || !file.name){
-		return false;
+		ret.isValid = false;
+
+		return ret;
 	}
 
 	const ext = getExtension(file.name);
 	if(!ALLOWED_EXTENSIONS.includes(ext)){
-		return false;
+		ret.isValid = false;
+
+		return ret;
 	}
 
-	sriSet.extension = ext;
+	ret.isValid = true;
+	ret.extension = ext;
 
-	return true;
+	return ret;
 }
 
 /**
@@ -289,15 +357,14 @@ $(() => {
 	/*
 	 * タブ切り替えによるモード変更
 	 */
-	$('#selectMode button').click(function(){
-		const $this = $(this);
+	$('#selectMode button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e){
+		const $active   = $(e.target);
+		const $previous = $(e.relatedTarget);
 
-		if($(this).hasClass('active')){
-			const id = $this.attr('id');
-			const activeMode = id.replace(/^mode-(.+)-tab$/, '$1');
-			if(mode !== activeMode){
-				mode = activeMode;
-			}
+		const id = $active.attr('id');
+		const activeMode = id.replace(/^mode-(.+)-tab$/, '$1');
+		if(mode !== activeMode){
+			mode = activeMode;
 		}
 	});
 
@@ -318,24 +385,38 @@ $(() => {
 
 		let errMsg;
 
+		// CDN URL
 		if(mode === 'fetch'){
-			if(!validateURL(url)){
-				errMsg = 'Invalid URL or invalid file type';
+			if(!url){
+				errMsg = 'URL is required';
 			} else{
-				// フェッチとCORSチェック
-				const proveRes = await probeCorsReadable(url);
-				if(!proveRes.readable){
-					errMsg = 'May not be found or violates CORS policy. Please check URL or download the file and try uploading it.';
+				const validate = validateURL(url);
+				if(!validate.isValid){
+					errMsg = 'Invalid URL';
+				} else{
+					// フェッチとCORSチェック
+					const proveRes = await probeCorsReadable(url);
+					if(!proveRes.readable){
+						errMsg = 'May not be found or violates CORS policy. Please check URL or download the file and try uploading it.';
 
-					$('button#mode-upload-tab').click();
+						$('button#mode-upload-tab').click();
+					} else{
+						sriSet.extension = validate.extension;
+					}
 				}
 			}
 		}
+		// アップロード
 		else if(mode === 'upload'){
 			if(!file || file.size === 0){
 				errMsg = 'Upload file is required';
-			} else if(!validateFile(file)){
-				errMsg = 'Invalid upload file type';
+			} else{
+				const validate = validateFile(file);
+				if(!validate.isValid){
+					errMsg = 'Invalid upload file type';
+				} else{
+					sriSet.extension = validate.extension;
+				}
 			}
 		}
 		// 不正
