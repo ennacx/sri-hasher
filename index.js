@@ -61,8 +61,8 @@ async function probeCorsReadable(url) {
 		}
 
 		return { readable: true, status: res.status, contentType: res.headers.get('content-type') };
-	} catch (e) {
-		return { readable: false, reason: 'fetch_failed', error: e };
+	} catch(e){
+		return { readable: false, reason: e.message, error: e };
 	}
 }
 
@@ -71,7 +71,7 @@ function validateFile(file) {
 		return false;
 	}
 
-	const ext = getExtension(file.name);console.log(ext);
+	const ext = getExtension(file.name);
 	if(!ALLOWED_EXTENSIONS.includes(ext)){
 		return false;
 	}
@@ -191,16 +191,13 @@ $(() => {
 			if(!validateURL(url)){
 				errMsg = 'Invalid URL or invalid file type';
 			} else{
-				probeCorsReadable(url)
-					.then((res) => {
-						if(!res.readable){
-							errMsg = `Fetch failed: ${res.error.message}`;
-						}
-					})
-					.catch((e) => {
-						console.error(e);
-					})
-				;
+				// フェッチとCORSチェック
+				const proveRes = await probeCorsReadable(url);
+				if(!proveRes.readable){
+					errMsg = 'May not be found or violates CORS policy. Please check URL or download the file and try uploading it.';
+
+					$('button#mode-upload-tab').click();
+				}
 			}
 		}
 		else if(mode === 'upload'){
