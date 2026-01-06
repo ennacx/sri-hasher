@@ -1,13 +1,22 @@
 const ALLOWED_EXTENSIONS = ['js', 'css', 'wasm'];
 
-let sri;
-let sriTag;
-let extension;
+const sriSet = {
+	sri: undefined,
+	sriTag: undefined,
+	extension: undefined
+};
+
+function initSriSet() {
+	for(const key in sriSet){
+		sriSet[key] = undefined;
+	}
+}
 
 function getExtension(target) {
 	const name = (target instanceof URL) ? target.pathname : target;
 	return name.split('.').pop();
 }
+
 function validateURL(u) {
 	try {
 		const url = new URL(u);
@@ -19,7 +28,7 @@ function validateURL(u) {
 				return false;
 			}
 
-			extension = ext;
+			sriSet.extension = ext;
 		}
 
 		return true;
@@ -57,13 +66,17 @@ async function probeCorsReadable(url) {
 	}
 }
 
-function validateFile(name) {
-	const ext = getExtension(name);
+function validateFile(file) {
+	if(!file){
+		return false;
+	}
+
+	const ext = getExtension(file.name);console.log(ext);
 	if(!ALLOWED_EXTENSIONS.includes(ext)){
 		return false;
 	}
 
-	extension = ext;
+	sriSet.extension = ext;
 
 	return true;
 }
@@ -95,7 +108,7 @@ async function sriFromArrayBuffer(arrayBuffer, algo) {
 }
 
 function makeHtmlTag(url, hash) {
-	switch(extension){
+	switch(sriSet.extension){
 		case 'js':
 			return `<script src="${url}" integrity="${hash}" crossorigin="anonymous"></script>`;
 		case 'wasm':
@@ -103,7 +116,7 @@ function makeHtmlTag(url, hash) {
 		case 'css':
 			return `<link rel="stylesheet" href="${url}" integrity="${hash}" crossorigin="anonymous">`;
 		default:
-			throw new Error(`Unknown extension: ${extension}`);
+			throw new Error(`Unknown extension: ${sriSet.extension}`);
 	}
 }
 
@@ -148,10 +161,19 @@ $(() => {
 		$errorAlert.empty();
 	};
 
+	let mode = 'fetch';
+	$('#selectMode button').click(function(){
+		const $this = $(this);
+		if($this.hasClass('active')){
+			const activeMode = $this.attr('id').replace(/^mode-(.+)-tab$/, '$1');
+			if(mode !== activeMode){
+				mode = activeMode;
+			}
+		}
+	});
+
 	$('button[name="generate-hash"]').click(async () => {
-		extension = undefined;
-		sri = undefined;
-		sriTag = undefined;
+		initSriSet();
 
 		hideAlert();
 		$resultCard.hide();
@@ -160,20 +182,7 @@ $(() => {
 		const file    = $uploadForm.files[0] ?? null;
 		const sriHash = $('select[name="sri-hash"] option:selected').val();
 
-		let mode;
 		let errMsg;
-
-		if(url){
-			mode = 'fetch';
-		} else if(file?.size > 0){
-			mode = 'upload';
-		}
-		// 不正
-		else{
-			showAlert('URL or file is required');
-
-			return false;
-		}
 
 		if(mode === 'fetch'){
 			if(!validateURL(url)){
@@ -192,9 +201,17 @@ $(() => {
 			}
 		}
 		else if(mode === 'upload'){
-			if(!validateFile(file.name)){
-				errMsg = 'Invalid file type';
+			if(!file || file.size === 0){
+				errMsg = 'Upload file is required';
+			} else if(!validateFile(file)){
+				errMsg = 'Invalid upload file type';
 			}
+		}
+		// 不正
+		else{
+			showAlert('URL or file is required');
+
+			return false;
 		}
 
 		if(errMsg){
@@ -215,11 +232,11 @@ $(() => {
 				src = file.name;
 			}
 
-			sri = await sriFromArrayBuffer(resBuffer, sriHash);
-			sriTag = makeHtmlTag(src, sri);
+			sriSet.sri = await sriFromArrayBuffer(resBuffer, sriHash);
+			sriSet.sriTag = makeHtmlTag(src, sriSet.sri);
 
-			$('#sri > pre').text(sri);
-			$('#sri-tag > pre').text(sriTag);
+			$('#sri > pre').text(sriSet.sri);
+			$('#sri-tag > pre').text(sriSet.sriTag);
 
 			$resultCard.show();
 		} catch(e){
@@ -239,9 +256,9 @@ $(() => {
 
 		let text;
 		if(attribute === 'sri'){
-			text = sri;
+			text = sriSet.sri;
 		} else if(attribute === 'sri-tag'){
-			text = sriTag;
+			text = sriSet.sriTag;
 		} else{
 			throw new Error(`Invalid attribute: ${attribute}`);
 		}

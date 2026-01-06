@@ -55,27 +55,43 @@
             </div>
 
             <div>
-                <div class="form-group">
-                    <label for="url">URL</label>
-                    <input type="text" name="url" id="url" class="form-control" placeholder="https://cdn.example.com/index.min.js" autocomplete="off"
-                           value="https://code.jquery.com/jquery-3.7.1.min.js"
-                    />
-                </div>
-                <div class="form-group">
-                    <label for="upload-file">ファイルアップロード</label>
-                    <input type="file" name="upload-file" id="upload-file" class="form-control" />
-                </div>
+                <ul id="selectMode" class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button type="button" id="mode-fetch-tab" class="nav-link active" data-bs-toggle="tab" data-bs-target="#mode-fetch-tab-pane" role="tab" aria-controls="mode-fetch-tab-pane" aria-selected="true">CDN Resources</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button type="button" id="mode-upload-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#mode-upload-tab-pane" role="tab" aria-controls="mode-upload-tab-pane" aria-selected="true">File Upload</button>
+                    </li>
+                </ul>
 
-                <div class="form-group mt-2">
-                    <label for="sri-hash">Hash</label>
-                    <select name="sri-hash" id="sri-hash" class="form-select">
-                        <option value="SHA-256">SHA-256</option>
-                        <option value="SHA-384">SHA-384</option>
-                        <option value="SHA-512">SHA-512</option>
-                    </select>
-                </div>
-                <div class="mt-2">
-                    <button type="button" name="generate-hash" id="generate-hash" class="btn btn-sm btn-primary w-100">Hash</button>
+                <div id="selectModeContent" class="tab-content">
+                    <div id="mode-fetch-tab-pane" class="tab-pane fade show active">
+                        <div class="form-group">
+                            <label for="url">Enter the CDN-URL the resource you want to use:</label>
+                            <input type="text" name="url" id="url" class="form-control" placeholder="https://cdn.example.com/index.min.js" autocomplete="off"
+                                   value="https://code.jquery.com/jquery-3.7.1.min.js"
+                            />
+                        </div>
+                    </div>
+                    <div id="mode-upload-tab-pane" class="tab-pane fade">
+                        <div class="form-group">
+                            <label for="upload-file">Upload the resource you want to use:</label>
+                            <input type="file" name="upload-file" id="upload-file" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <label for="sri-hash">SRI Hash</label>
+                        <select name="sri-hash" id="sri-hash" class="form-select">
+                            <option value="SHA-256">SHA-256</option>
+                            <option value="SHA-384">SHA-384</option>
+                            <option value="SHA-512">SHA-512</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-2">
+                        <button type="button" name="generate-hash" id="generate-hash" class="btn btn-sm btn-primary w-100">Hash</button>
+                    </div>
                 </div>
             </div>
 

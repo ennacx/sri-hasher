@@ -115,6 +115,16 @@ footer ul.copy-links li i {
 #content input#url::placeholder {
   color: #d5d8db;
 }
+#content #selectMode li button:not(.active) {
+  color: #878787;
+}
+#content #selectModeContent {
+  border-bottom: 1px solid #eaeaea;
+  border-right: 1px solid #eaeaea;
+  border-left: 1px solid #eaeaea;
+  border-radius: 0 0 4px 4px;
+  padding: 16px 8px 8px;
+}
 
 pre.result-mono {
   background: #eee;
