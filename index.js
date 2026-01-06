@@ -1,4 +1,32 @@
-const ALLOWED_EXTENSIONS = ['js', 'css', 'wasm'];
+/**
+ * An object defining the templates for embedding external resources (JavaScript, CSS, WASM) into a web page.
+ *
+ * Properties:
+ * - `js`: Defines the template for JavaScript resources, including attributes for source, integrity, and crossorigin.
+ * - `css`: Defines the template for CSS resources, including attributes for source, integrity, and crossorigin.
+ * - `wasm`: Defines the template for WebAssembly resources using JavaScript modules, including attributes for source, integrity, and crossorigin.
+ *
+ * Each template uses placeholders (`{{source}}`, `{{sri}}`) for dynamic values to be replaced at runtime.
+ */
+const EXT_MASTER = {
+	js: {
+		tag: '<script src="{{source}}" integrity="{{sri}}" crossorigin="anonymous"></script>'
+	},
+	css: {
+		tag: '<link rel="stylesheet" href="{{source}}" integrity="{{sri}}" crossorigin="anonymous">'
+	},
+	wasm: {
+		tag: '<script type="module" src="{{source}}" integrity="{{sri}}" crossorigin="anonymous"></script>'
+	}
+};
+
+/**
+ * A constant that holds an array of strings representing the allowed file extensions.
+ *
+ * The `ALLOWED_EXTENSIONS` variable is derived from the keys of the `EXT_MASTER` object.
+ * Each key in `EXT_MASTER` represents a file extension that is permitted for use.
+ */
+const ALLOWED_EXTENSIONS = Object.keys(EXT_MASTER);
 
 /**
  * Represents an object containing Subresource Integrity (SRI) information.
@@ -193,16 +221,13 @@ async function sriFromArrayBuffer(arrayBuffer, algo) {
  * @throws {Error} Throws an error if the file extension is not supported.
  */
 function makeHtmlTag(source, sri) {
-	switch(sriSet.extension){
-		case 'js':
-			return `<script src="${source}" integrity="${sri}" crossorigin="anonymous"></script>`;
-		case 'wasm':
-			return `<script type="module" src="${source}" integrity="${sri}" crossorigin="anonymous"></script>`;
-		case 'css':
-			return `<link rel="stylesheet" href="${source}" integrity="${sri}" crossorigin="anonymous">`;
-		default:
-			throw new Error(`Unknown extension: ${sriSet.extension}`);
+	if(!EXT_MASTER[sriSet.extension]){
+		throw new Error(`Unknown extension: ${sriSet.extension}`);
 	}
+
+	const tag = EXT_MASTER[sriSet.extension].tag;
+
+	return tag.replace('{{source}}', source).replace('{{sri}}', sri);
 }
 
 /**
@@ -241,8 +266,13 @@ function copyToClipboard(text) {
 $(() => {
 	const $errorAlert = $('#error-alert');
 	const $resultCard = $('#result');
-	const $urlForm = $('input[name="url"]');
+	const $urlForm    = $('input[name="url"]');
 	const $uploadForm = $('input[name="upload-file"]')[0];
+
+	// 初回モードはCDN
+	let mode = 'fetch';
+	$('ul#selectMode').find(`#mode-${mode}-tab`).addClass('active');
+	$('div#selectModeContent').find(`#mode-${mode}-tab-pane`).addClass('show active');
 
 	$('input[name="upload-file"]').attr('accept', ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(','));
 	$('p.allow-ext > span.ext').html(`<span class="mono-font">${ALLOWED_EXTENSIONS.join(',')}</span>`);
@@ -259,7 +289,6 @@ $(() => {
 	/*
 	 * タブ切り替えによるモード変更
 	 */
-	let mode = 'fetch';
 	$('#selectMode button').click(function(){
 		const $this = $(this);
 
@@ -328,13 +357,13 @@ $(() => {
 
 			if(mode === 'fetch'){
 				resBuffer = await fetchContent(url);
-				src = url;
+				src       = url;
 			} else if(mode === 'upload'){
 				resBuffer = await file.arrayBuffer();
-				src = file.name;
+				src       = file.name;
 			}
 
-			sriSet.sri = await sriFromArrayBuffer(resBuffer, sriHash);
+			sriSet.sri    = await sriFromArrayBuffer(resBuffer, sriHash);
 			sriSet.sriTag = makeHtmlTag(src, sriSet.sri);
 
 			$('#sri > pre').text(sriSet.sri);
@@ -390,7 +419,7 @@ $(() => {
 			.catch((e) => {
 				console.error(e);
 
-				window.alert("コピーに失敗しました。");
+				window.alert('Copy to clipboard failed. Please try again later.');
 			})
 		;
 	});
