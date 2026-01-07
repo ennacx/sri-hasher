@@ -109,87 +109,7 @@
             </div>
         </fieldset>
 
-        <fieldset id="readme-field">
-            <dl>
-                <dt>🧰&nbsp;What is this tool?</dt>
-                <dd>
-                    This tool is intended for developers who want to understand and use SRI correctly.
-                </dd>
-
-                <dt>🧭&nbsp;How to use</dt>
-                <dd>
-                    <ol>
-                        <li>
-                            Enter the CDN URL of the resource you want to use, or upload the resource file directly.<br>
-                            (Only URLs that directly reference a file are supported. URLs that rely on query parameters are not supported.)
-                        </li>
-                        <li>Click the &quot;Hash&quot; button.</li>
-                        <li>Copy the generated SRI hash and paste it into the <code>integrity</code> attribute of the <code>&lt;script&gt;</code> or <code>&lt;link&gt;</code> tag.</li>
-                        <li>If the resource cannot be fetched due to CORS restrictions, you can download the file and generate the SRI hash via file upload.</li>
-                        <li>If you want to use the resource offline, you can use the function to upload and generate a resource file.</li>
-                    </ol>
-                </dd>
-
-                <dt>🧩&nbsp;What is SRI?</dt>
-                <dd>
-                    Subresource Integrity (SRI) is a security feature that allows browsers to verify that resources loaded from a CDN have not been modified.<br>
-                    If the fetched resource does not match the expected hash value, the browser will block it.<br><br>
-                    For more details, please refer to the following documentation:<br>
-                    <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity" rel="nofollow" target="_blank">https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity</a>
-                </dd>
-
-                <dt>⚠️&nbsp;What happens if SRI is not specified?</dt>
-                <dd>
-                    If a resource is loaded from a CDN without an SRI hash, the browser will trust the content entirely based on the URL alone.<br><br>
-                    This means that if the resource is modified — intentionally or accidentally — the browser will still execute or apply it without any warning.<br><br>
-                    While CDNs are generally reliable, SRI provides an additional layer of protection by ensuring that the fetched resource is exactly the one you expect.<br><br>
-                    Even when using HTTPS, there are edge cases — such as certain DNS-related attacks — where an unexpected resource could be delivered.<br>
-                    SRI helps mitigate such risks by verifying the integrity of the resource itself.
-                </dd>
-
-                <dt>🔗&nbsp;Why is <code>crossorigin="anonymous"</code> required?</dt>
-                <dd>
-                    When using Subresource Integrity (SRI) with resources loaded from a CDN,
-                    the browser may perform a CORS-enabled request to verify the integrity of the resource.<br><br>
-                    In such cases, the <code>crossorigin="anonymous"</code> attribute is required to ensure
-                    that the resource is fetched without credentials and can be properly validated against the specified SRI hash.<br><br>
-                    Without this attribute, the browser may block the resource or fail the integrity check, even if the hash value itself is correct.
-                </dd>
-
-                <dt>🤔&nbsp;Is that even possible?</dt>
-                <dd>
-                    In short: yes, but with limitations.<br><br>
-                    This tool runs entirely in your browser and uses standard Web APIs.<br>
-                    When a CDN allows cross-origin access (CORS), the resource can be fetched directly and its SRI hash can be generated automatically.<br><br>
-                    However, if the CDN does not permit cross-origin access, the browser is not allowed to read the resource content. In such cases,
-                    automatic SRI generation from a URL is technically impossible due to browser security restrictions.<br><br>
-                    As a workaround, you can download the resource file manually and generate the SRI hash via file upload.<br>
-                    This keeps the process secure and transparent.
-                </dd>
-
-                <dt>⚙️&nbsp;Design philosophy</dt>
-                <dd>
-                    This is a developer-oriented utility for generating Subresource Integrity (SRI) hashes for CDN-hosted resources.<br><br>
-                    The purpose of this tool is not only to generate hash values, but also to help you understand how SRI works,
-                    why it matters, and what limitations exist when using it in real-world web environments.<br><br>
-                    This tool intentionally follows standard browser security rules and does not bypass them.
-                </dd>
-
-                <dt>📄&nbsp;Disclaimer</dt>
-                <dd>
-                    This tool retrieves CDN resources directly in your browser and generates SRI hash values locally. No data is stored or transmitted to any server.<br>
-                    Please note that the author is not responsible for any issues that may arise from the use of this tool.
-                </dd>
-
-                <dt>📜&nbsp;License</dt>
-                <dd>
-                    <ul>
-                        <li>MIT License</li>
-                        <li>CreativeCommons 4.0 BY-SA</li>
-                    </ul>
-                </dd>
-            </dl>
-        </fieldset>
+        <fieldset id="readme-field"></fieldset>
     </main>
 
     <!-- フッター -->
@@ -208,5 +128,124 @@
             </ul>
         </div>
     </footer>
+
+<script>
+	/**
+	 * Parses the given HTML string and extracts the child nodes.
+	 *
+	 * @param {string} htmlText - The HTML string to be parsed into nodes.
+	 * @return {Array<Element>} An array of child nodes parsed from the input HTML string.
+	 */
+	function parseReadmeNodes(htmlText) {
+		// まず<html>/<body> が無くても確実にDOM化できる<template>フラグメントとして扱う
+		const tpl = document.createElement('template');
+		tpl.innerHTML = htmlText.trim();
+
+		let nodes = Array.from(tpl.content.children);
+
+		// markedが完全HTMLを吐いた場合はtemplateの直下は`<html>`になりがちで、その場合は中の`<body>`を優先して抽出
+		if (nodes.length === 1 && nodes[0].tagName === 'HTML') {
+			const htmlEl = nodes[0];
+			const body = htmlEl.querySelector('body');
+			nodes = body ? Array.from(body.children) : Array.from(htmlEl.children);
+		}
+
+		// まれに template.content が空っぽになるケースに備えてのDOMParserフォールバック (激レアケース)
+		if(nodes.length === 0){
+			const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+			nodes = Array.from(doc.body?.children ?? []);
+		}
+
+		return nodes;
+	}
+
+	/**
+	 * Constructs a definition list (dl element) from an array of marked nodes, organizing them into
+	 * definition terms (dt elements) and definition descriptions (dd elements) based on their tags.
+	 *
+	 * @param {HTMLElement[]} nodes
+     *  - An array of HTML elements to be processed. The nodes are filtered to exclude elements with the tag name 'H1',
+     *    and those with the 'H2' tag are treated as definition terms.
+	 * @return {HTMLDListElement}
+     *  - A constructed definition list (dl element) containing the processed nodes organized into dt and dd pairs.
+	 */
+	function buildDlFromMarkedNodes(nodes) {
+		// DLを作っておく
+		const dl = document.createElement('dl');
+
+		// Optional:
+		nodes = nodes
+            // READMEタイトルはページ側にあるので <h1> を捨てる
+            .filter((n) => (n.tagName !== 'H1'))
+        ;
+
+		// DDタグ用
+		let currentDD = null;
+
+		// ノード内の要素をループして<dt>と<dd>を分けていく
+		for(const node of nodes){
+			// readmeの各見出しは 見出し2 としているので<h2>になっている
+			if(node.tagName === 'H2'){
+				const dt = document.createElement('dt');
+				dt.innerHTML = node.innerHTML;
+				dl.appendChild(dt);
+
+				currentDD = document.createElement('dd');
+				dl.appendChild(currentDD);
+
+				continue;
+			}
+
+			// 見出し2より前に本文がある場合は最初の<dd>として受ける (フェイルセーフ)
+			if(!currentDD){
+				currentDD = document.createElement('dd');
+				dl.appendChild(currentDD);
+			}
+
+			// 見出し2が来るまでのノードは<dd>で囲う
+			currentDD.appendChild(node.cloneNode(true));
+		}
+
+		return dl;
+	}
+
+	/**
+	 * Fetches and displays the README documentation from a specified HTML file.
+	 * This function targets an element with an ID of 'readme-field' and updates its contents with the loaded README.
+	 * If the fetch or processing fails, an alert message will be displayed within the target element.
+	 *
+	 * @return {Promise<void>} A promise that resolves when the README content is fetched and rendered, or an alert message is shown in case of an error.
+	 */
+	async function fetchReadme() {
+		// 埋め込み対象
+		const field = document.getElementById('readme-field');
+		if(!field){
+			return;
+		}
+
+		field.innerHTML = '';
+
+		try {
+			const res = await fetch('readme.html', { cache: 'no-store' });
+
+			if(!res.ok){
+				throw new Error(`Failed to load readme.html: ${res.status}`);
+			}
+
+			const htmlText = await res.text();
+			const nodes    = parseReadmeNodes(htmlText);
+			const dl       = buildDlFromMarkedNodes(nodes);
+
+			field.appendChild(dl);
+		} catch(e){
+			console.error(e);
+
+			field.innerHTML = '<div class="alert alert-warning" role="alert">Failed to load documentation.</div>';
+		}
+	}
+
+	// ↑の関数を使って`readme.html`を埋め込む
+	document.addEventListener('DOMContentLoaded', fetchReadme);
+</script>
 </body>
 </html>

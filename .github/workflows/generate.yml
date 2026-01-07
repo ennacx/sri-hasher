@@ -60,6 +60,7 @@ jobs:
     - name: Copy resources
       run: |
         cp ./manifest.json ./dist/
+        cp ./readme.html ./dist/
         cp ./favicon.ico ./dist/
         cp ./resources/icon-256.png ./dist/resources/
         cp ./resources/icon-512.png ./dist/resources/

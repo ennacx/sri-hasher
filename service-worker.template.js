@@ -3,6 +3,7 @@ const SERVICE_FILES_TO_CACHE = [
 	// Resources
     "./",
     "./index.html",
+	"./readme.html",
     "./index.js",
 	"./reg-service-worker.js",
     "./sri-hasher.css",
