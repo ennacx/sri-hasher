@@ -64,7 +64,7 @@ jobs:
 
     - name: Copy resources
       run: |
-        cp -r ./vendor ./dist/vendor/
+        cp -r ./vendor/. ./dist/vendor/
         cp ./manifest.json ./dist/
         cp ./favicon.ico ./dist/
         cp ./resources/icon-256.png ./dist/resources/
