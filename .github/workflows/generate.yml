@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -43,6 +43,10 @@ jobs:
         GIT_HASH=$(git rev-parse --short HEAD)
         sed "s/{{GIT_HASH}}/${GIT_HASH}/g" service-worker.template.js > service-worker.js
 
+    - name: Generate readme.html from README.md
+      run: |
+        npx marked -y -i README.md -o ./dist/readme.html
+
     - name: HTML minifier
       run: |
         html-minifier-terser --collapse-whitespace --remove-comments --remove-optional-tags --remove-redundant-attributes --remove-script-type-attributes --remove-style-link-type-attributes --use-short-doctype --minify-js true --minify-css true ./index.html -o ./dist/index.html
@@ -60,7 +64,6 @@ jobs:
     - name: Copy resources
       run: |
         cp ./manifest.json ./dist/
-        cp ./readme.html ./dist/
         cp ./favicon.ico ./dist/
         cp ./resources/icon-256.png ./dist/resources/
         cp ./resources/icon-512.png ./dist/resources/
@@ -73,12 +76,16 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+
     needs: build
+
     permissions:
       pages: write
       id-token: write
+
     environment:
       name: github-pages
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
