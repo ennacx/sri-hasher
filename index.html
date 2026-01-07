@@ -10,17 +10,17 @@
 
     <title>Integrity SRI hasher</title>
 
-    <!-- JS(CDN) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous" defer></script>
-    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js" integrity="sha256-AlTido85uXPlSyyaZNsjJXeCs07eSv3r43kyCVc8ChI=" crossorigin="anonymous" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha256-ew8UiV1pJH/YjpOEBInP1HxVvT/SfrCmwSoUzF9JIgc=" crossorigin="anonymous" defer></script>
+    <!-- External JS -->
+    <script src="vendor/jquery-3.7.1.min.js"></script>
+    <script src="vendor/jquery-ui-1.14.1.min.js"></script>
+    <script src="vendor/bootstrap-5.3.8.min.js"></script>
 
     <!-- Local JS -->
     <script src="index.js" defer></script>
 
-    <!-- CSS(CDN) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha256-2FMn2Zx6PuH5tdBQDRNwrOo60ts5wWPC9R8jK67b3t4=" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" integrity="sha256-pdY4ejLKO67E0CM2tbPtq1DJ3VGDVVdqAR6j3ZwdiE4=" crossorigin="anonymous">
+    <!-- External CSS -->
+    <link rel="stylesheet" href="vendor/bootstrap-5.3.8.min.css">
+    <link rel="stylesheet" href="vendor/bootstrap-icons-1.13.1/bootstrap-icons.min.css">
 
     <!-- Local CSS -->
     <link rel="stylesheet" href="sri-hasher.css">
@@ -30,12 +30,6 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" href="resources/icon-256.png" type="image/png" sizes="256x256">
     <link rel="apple-touch-icon" href="resources/icon-512.png" sizes="512x512">
-
-    <script>
-		if(location.protocol !== 'https:'){
-			alert('A secure connection (HTTPS) is recommended.');
-		}
-    </script>
 
     <!-- JSONはcompact/minifyしてくれないのでわざと1行に -->
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"sri-hasher","applicationCategory":"Utility","operatingSystem":"Web","description":"CDNサブリソース完全性のハッシュを生成。オフラインでも使えます。","url":"https://ennacx.github.io/sri-hasher/","image":"https://ennacx.github.io/sri-hasher/resources/ogp-banner.png","creator":{"@type":"Person","name":"ennacx"}}</script>
@@ -129,123 +123,167 @@
         </div>
     </footer>
 
-<script>
-	/**
-	 * Parses the given HTML string and extracts the child nodes.
-	 *
-	 * @param {string} htmlText - The HTML string to be parsed into nodes.
-	 * @return {Array<Element>} An array of child nodes parsed from the input HTML string.
-	 */
-	function parseReadmeNodes(htmlText) {
-		// まず<html>/<body> が無くても確実にDOM化できる<template>フラグメントとして扱う
-		const tpl = document.createElement('template');
-		tpl.innerHTML = htmlText.trim();
+    <script defer>
+	    if(location.protocol !== 'https:'){
+		    alert('⚠️ A secure connection (HTTPS) is recommended.');
+	    }
 
-		let nodes = Array.from(tpl.content.children);
+	    function detectMissingFeatures() {
+		    const missing = [];
 
-		// markedが完全HTMLを吐いた場合はtemplateの直下は`<html>`になりがちで、その場合は中の`<body>`を優先して抽出
-		if (nodes.length === 1 && nodes[0].tagName === 'HTML') {
-			const htmlEl = nodes[0];
-			const body = htmlEl.querySelector('body');
-			nodes = body ? Array.from(body.children) : Array.from(htmlEl.children);
-		}
+		    if(!(globalThis.crypto && crypto.subtle && typeof crypto.subtle.digest === 'function')){
+			    missing.push('Web Crypto API (crypto.subtle.digest)');
+		    }
+		    if(typeof fetch !== 'function'){
+			    missing.push('fetch()');
+		    }
+		    if(typeof URL !== 'function'){
+			    missing.push('URL');
+		    }
+		    if(typeof btoa !== 'function'){
+			    missing.push('btoa()');
+		    }
+		    if(!globalThis.jQuery){
+			    missing.push('jQuery (failed to load)');
+		    }
 
-		// まれに template.content が空っぽになるケースに備えてのDOMParserフォールバック (激レアケース)
-		if(nodes.length === 0){
-			const doc = new DOMParser().parseFromString(htmlText, 'text/html');
-			nodes = Array.from(doc.body?.children ?? []);
-		}
+		    return missing;
+	    }
 
-		return nodes;
-	}
+	    function makeUnsupportedMessage(missing) {
+		    return [
+			    `This tool cannot run in your browser.\n\n`,
+			    `Missing:\n- ${missing.join('\n- ')}\n\n`,
+			    `Please use a modern browser (Chrome/Edge/Firefox/Safari) and access via HTTPS.`
+		    ].join('');
+	    }
 
-	/**
-	 * Constructs a definition list (dl element) from an array of marked nodes, organizing them into
-	 * definition terms (dt elements) and definition descriptions (dd elements) based on their tags.
-	 *
-	 * @param {HTMLElement[]} nodes
-     *  - An array of HTML elements to be processed. The nodes are filtered to exclude elements with the tag name 'H1',
-     *    and those with the 'H2' tag are treated as definition terms.
-	 * @return {HTMLDListElement}
-     *  - A constructed definition list (dl element) containing the processed nodes organized into dt and dd pairs.
-	 */
-	function buildDlFromMarkedNodes(nodes) {
-		// DLを作っておく
-		const dl = document.createElement('dl');
+	    const missing = detectMissingFeatures();
+	    if(missing.length > 0){
+		    const msg = makeUnsupportedMessage(missing);
 
-		// Optional:
-		nodes = nodes
-            // READMEタイトルはページ側にあるので <h1> を捨てる
-            .filter((n) => (n.tagName !== 'H1'))
-        ;
+		    // Hashボタン無効化
+		    document.getElementById('generate-hash').disabled = true;
 
-		// DDタグ用
-		let currentDD = null;
+		    alert(msg);
+	    }
 
-		// ノード内の要素をループして<dt>と<dd>を分けていく
-		for(const node of nodes){
-			// readmeの各見出しは 見出し2 としているので<h2>になっている
-			if(node.tagName === 'H2'){
-				const dt = document.createElement('dt');
-				dt.innerHTML = node.innerHTML;
-				dl.appendChild(dt);
+        /**
+         * Parses the given HTML string and extracts the child nodes.
+         *
+         * @param {string} htmlText - The HTML string to be parsed into nodes.
+         * @return {Array<Element>} An array of child nodes parsed from the input HTML string.
+         */
+        function parseReadmeNodes(htmlText) {
+            // まず<html>/<body> が無くても確実にDOM化できる<template>フラグメントとして扱う
+            const tpl = document.createElement('template');
+            tpl.innerHTML = htmlText.trim();
 
-				currentDD = document.createElement('dd');
-				dl.appendChild(currentDD);
+            let nodes = Array.from(tpl.content.children);
 
-				continue;
-			}
+            // markedが完全HTMLを吐いた場合はtemplateの直下は`<html>`になりがちで、その場合は中の`<body>`を優先して抽出
+            if (nodes.length === 1 && nodes[0].tagName === 'HTML') {
+                const htmlEl = nodes[0];
+                const body = htmlEl.querySelector('body');
+                nodes = body ? Array.from(body.children) : Array.from(htmlEl.children);
+            }
 
-			// 見出し2より前に本文がある場合は最初の<dd>として受ける (フェイルセーフ)
-			if(!currentDD){
-				currentDD = document.createElement('dd');
-				dl.appendChild(currentDD);
-			}
+            // まれに template.content が空っぽになるケースに備えてのDOMParserフォールバック (激レアケース)
+            if(nodes.length === 0){
+                const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+                nodes = Array.from(doc.body?.children ?? []);
+            }
 
-			// 見出し2が来るまでのノードは<dd>で囲う
-			currentDD.appendChild(node.cloneNode(true));
-		}
+            return nodes;
+        }
 
-		return dl;
-	}
+        /**
+         * Constructs a definition list (dl element) from an array of marked nodes, organizing them into
+         * definition terms (dt elements) and definition descriptions (dd elements) based on their tags.
+         *
+         * @param {HTMLElement[]} nodes
+         *  - An array of HTML elements to be processed. The nodes are filtered to exclude elements with the tag name 'H1',
+         *    and those with the 'H2' tag are treated as definition terms.
+         * @return {HTMLDListElement}
+         *  - A constructed definition list (dl element) containing the processed nodes organized into dt and dd pairs.
+         */
+        function buildDlFromMarkedNodes(nodes) {
+            // DLを作っておく
+            const dl = document.createElement('dl');
 
-	/**
-	 * Fetches and displays the README documentation from a specified HTML file.
-	 * This function targets an element with an ID of 'readme-field' and updates its contents with the loaded README.
-	 * If the fetch or processing fails, an alert message will be displayed within the target element.
-	 *
-	 * @return {Promise<void>} A promise that resolves when the README content is fetched and rendered, or an alert message is shown in case of an error.
-	 */
-	async function fetchReadme() {
-		// 埋め込み対象
-		const field = document.getElementById('readme-field');
-		if(!field){
-			return;
-		}
+            // Optional:
+            nodes = nodes
+                // READMEタイトルはページ側にあるので <h1> を捨てる
+                .filter((n) => (n.tagName !== 'H1'))
+            ;
 
-		field.innerHTML = '';
+            // DDタグ用
+            let currentDD = null;
 
-		try {
-			const res = await fetch('readme.html', { cache: 'no-store' });
+            // ノード内の要素をループして<dt>と<dd>を分けていく
+            for(const node of nodes){
+                // readmeの各見出しは 見出し2 としているので<h2>になっている
+                if(node.tagName === 'H2'){
+                    const dt = document.createElement('dt');
+                    dt.innerHTML = node.innerHTML;
+                    dl.appendChild(dt);
 
-			if(!res.ok){
-				throw new Error(`Failed to load readme.html: ${res.status}`);
-			}
+                    currentDD = document.createElement('dd');
+                    dl.appendChild(currentDD);
 
-			const htmlText = await res.text();
-			const nodes    = parseReadmeNodes(htmlText);
-			const dl       = buildDlFromMarkedNodes(nodes);
+                    continue;
+                }
 
-			field.appendChild(dl);
-		} catch(e){
-			console.error(e);
+                // 見出し2より前に本文がある場合は最初の<dd>として受ける (フェイルセーフ)
+                if(!currentDD){
+                    currentDD = document.createElement('dd');
+                    dl.appendChild(currentDD);
+                }
 
-			field.innerHTML = '<div class="alert alert-warning" role="alert">Failed to load documentation.</div>';
-		}
-	}
+                // 見出し2が来るまでのノードは<dd>で囲う
+                currentDD.appendChild(node.cloneNode(true));
+            }
 
-	// ↑の関数を使って`readme.html`を埋め込む
-	document.addEventListener('DOMContentLoaded', fetchReadme);
-</script>
+            return dl;
+        }
+
+        /**
+         * Fetches and displays the README documentation from a specified HTML file.
+         * This function targets an element with an ID of 'readme-field' and updates its contents with the loaded README.
+         * If the fetch or processing fails, an alert message will be displayed within the target element.
+         *
+         * @return {Promise<void>} A promise that resolves when the README content is fetched and rendered, or an alert message is shown in case of an error.
+         */
+        async function fetchReadme() {
+            // 埋め込み対象
+            const field = document.getElementById('readme-field');
+            if(!field){
+                return;
+            }
+
+            field.innerHTML = '';
+
+            try {
+                const res = await fetch('readme.html', { cache: 'no-store' });
+
+                if(!res.ok){
+                    throw new Error(`Failed to load readme.html: ${res.status}`);
+                }
+
+                const htmlText = await res.text();
+                const nodes    = parseReadmeNodes(htmlText);
+                const dl       = buildDlFromMarkedNodes(nodes);
+
+                field.appendChild(dl);
+            } catch(e){
+                console.error(e);
+
+                field.innerHTML = '<div class="alert alert-warning" role="alert">Failed to load documentation.</div>';
+            }
+        }
+
+        // ↑の関数を使って`readme.html`を埋め込む
+        document.addEventListener('DOMContentLoaded', fetchReadme);
+    </script>
 </body>
 </html>

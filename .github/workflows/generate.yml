@@ -32,6 +32,7 @@ jobs:
       run: |
         rm -rf ./dist
         mkdir -p ./dist
+        mkdir -p ./dist/vendor
         mkdir -p ./dist/resources
 
     - name: Generate Google search console file
@@ -63,6 +64,7 @@ jobs:
 
     - name: Copy resources
       run: |
+        cp -r ./vendor/ ./dist/vendor/
         cp ./manifest.json ./dist/
         cp ./favicon.ico ./dist/
         cp ./resources/icon-256.png ./dist/resources/

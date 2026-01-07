@@ -11,14 +11,15 @@ const SERVICE_FILES_TO_CACHE = [
 	"./favicon.ico",
 	"./resources/icon-256.png",
 	"./resources/icon-512.png",
-	// CDN
-	"https://code.jquery.com/jquery-3.7.1.min.js",
-	"https://code.jquery.com/ui/1.14.1/jquery-ui.min.js",
-	"https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js",
-	"https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css",
-	"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css",
-	// WebFont
-	"https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Noto+Sans+JP:wght@100..900&display=swap"
+	"./vendor/bootstrap-5.3.8.min.css",
+	"./vendor/bootstrap-5.3.8.min.js",
+	"./vendor/jquery-3.7.1.min.js",
+	"./vendor/jquery-ui-1.14.1.min.js",
+	"./vendor/bootstrap-icons-1.13.1/bootstrap-icons.min.css",
+	// Fonts
+	"./vendor/fonts/AtkinsonHyperlegibleMono-Regular.woff2",
+	"./vendor/fonts/NotoSansJP-Regular.woff2",
+	"./vendor/bootstrap-icons-1.13.1/fonts/bootstrap-icons.woff2"
 ];
 
 self.addEventListener('install', (event) => {

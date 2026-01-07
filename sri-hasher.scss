@@ -1,7 +1,20 @@
 @charset "UTF-8";
 
 // Google fonts "Noto Sans JP", "Atkinson Hyperlegible Mono"
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Noto+Sans+JP:wght@100..900&display=swap');
+@font-face {
+	font-family: "Noto Sans JP";
+	src: url("./vendor/fonts/NotoSansJP-Regular.woff2") format("woff2");
+	font-weight: 100;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Atkinson Hyperlegible Mono";
+	src: url("./vendor/fonts/AtkinsonHyperlegibleMono-Regular.woff2") format("woff2");
+	font-weight: 200;
+	font-style: normal;
+	font-display: swap;
+}
 
 // 既定色
 $bg_color: #f9fafb;
