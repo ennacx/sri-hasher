@@ -342,6 +342,7 @@ $(() => {
 	$('ul#selectMode').find(`#mode-${mode}-tab`).addClass('active');
 	$('div#selectModeContent').find(`#mode-${mode}-tab-pane`).addClass('show active');
 
+	// 拡張子フィルタリング設定
 	$('input[name="upload-file"]').attr('accept', ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(','));
 	$('p.allow-ext > span.ext').html(`<span class="mono-font">${ALLOWED_EXTENSIONS.join(',')}</span>`);
 

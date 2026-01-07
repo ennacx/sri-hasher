@@ -43,18 +43,11 @@
 
 <body>
     <main id="content" class="container-fluid">
-        <fieldset id="form-field">
+        <fieldset id="generate-field">
             <h1><a href="./">🛡️ Integrity SRI Hasher</a></h1>
-            <h2>CDNサブリソース完全性のハッシュを生成</h2>
+            <h2>Generates CDN subresource integrity hashes. Works offline too.</h2>
 
-            <div id="subheader">
-                <p class="d-none">
-                    CDNサブリソース完全性のハッシュを生成。オフラインでも使えます。<br>
-                    Generates CDN subresource integrity hashes. Works offline too.
-                </p>
-            </div>
-
-            <div>
+            <div class="mt-4">
                 <ul id="selectMode" class="nav nav-tabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button type="button" id="mode-fetch-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#mode-fetch-tab-pane" role="tab" aria-controls="mode-fetch-tab-pane" aria-selected="true">CDN Resources</button>
@@ -78,7 +71,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group mt-2">
+                    <div class="form-group mt-3">
                         <label for="sri-hash">SRI Hash</label>
                         <select name="sri-hash" id="sri-hash" class="form-select">
                             <option value="SHA-256">SHA-256</option>
@@ -87,17 +80,17 @@
                         </select>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-4">
                         <button type="button" name="generate-hash" id="generate-hash" class="btn btn-sm btn-primary w-100">Hash</button>
                     </div>
 
-                    <div class="mt-3">
+                    <div class="mt-4">
                         <p class="allow-ext">Support formats:&ensp;<span class="ext"></span></p>
                     </div>
                 </div>
             </div>
 
-            <div id="result-field" class="mt-3">
+            <div id="result-field" class="mt-4">
                 <div id="result" class="card" style="display: none;">
                     <div class="card-header">Result</div>
                     <div class="card-body">
@@ -116,19 +109,94 @@
             </div>
         </fieldset>
 
-        <fieldset id="readme-field"></fieldset>
+        <fieldset id="readme-field">
+            <dl>
+                <dt>🧰&nbsp;What is this tool?</dt>
+                <dd>
+                    This tool is intended for developers who want to understand and use SRI correctly.
+                </dd>
+
+                <dt>🧭&nbsp;How to use</dt>
+                <dd>
+                    <ol>
+                        <li>
+                            Enter the CDN URL of the resource you want to use, or upload the resource file directly.<br>
+                            (Only URLs that directly reference a file are supported. URLs that rely on query parameters are not supported.)
+                        </li>
+                        <li>Click the &quot;Hash&quot; button.</li>
+                        <li>Copy the generated SRI hash and paste it into the <code>integrity</code> attribute of the <code>&lt;script&gt;</code> or <code>&lt;link&gt;</code> tag.</li>
+                        <li>If the resource cannot be fetched due to CORS restrictions, you can download the file and generate the SRI hash via file upload.</li>
+                        <li>If you want to use the resource offline, you can use the function to upload and generate a resource file.</li>
+                    </ol>
+                </dd>
+
+                <dt>🧩&nbsp;What is SRI?</dt>
+                <dd>
+                    Subresource Integrity (SRI) is a security feature that allows browsers to verify that resources loaded from a CDN have not been modified.<br>
+                    If the fetched resource does not match the expected hash value, the browser will block it.<br><br>
+                    For more details, please refer to the following documentation:<br>
+                    <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity" rel="nofollow" target="_blank">https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity</a>
+                </dd>
+
+                <dt>⚠️&nbsp;What happens if SRI is not specified?</dt>
+                <dd>
+                    If a resource is loaded from a CDN without an SRI hash, the browser will trust the content entirely based on the URL alone.<br><br>
+                    This means that if the resource is modified — intentionally or accidentally — the browser will still execute or apply it without any warning.<br><br>
+                    While CDNs are generally reliable, SRI provides an additional layer of protection by ensuring that the fetched resource is exactly the one you expect.<br><br>
+                    Even when using HTTPS, there are edge cases — such as certain DNS-related attacks — where an unexpected resource could be delivered.<br>
+                    SRI helps mitigate such risks by verifying the integrity of the resource itself.
+                </dd>
+
+                <dt>🔗&nbsp;Why is <code>crossorigin="anonymous"</code> required?</dt>
+                <dd>
+                    When using Subresource Integrity (SRI) with resources loaded from a CDN,
+                    the browser may perform a CORS-enabled request to verify the integrity of the resource.<br><br>
+                    In such cases, the <code>crossorigin="anonymous"</code> attribute is required to ensure
+                    that the resource is fetched without credentials and can be properly validated against the specified SRI hash.<br><br>
+                    Without this attribute, the browser may block the resource or fail the integrity check, even if the hash value itself is correct.
+                </dd>
+
+                <dt>🤔&nbsp;Is that even possible?</dt>
+                <dd>
+                    In short: yes, but with limitations.<br><br>
+                    This tool runs entirely in your browser and uses standard Web APIs.<br>
+                    When a CDN allows cross-origin access (CORS), the resource can be fetched directly and its SRI hash can be generated automatically.<br><br>
+                    However, if the CDN does not permit cross-origin access, the browser is not allowed to read the resource content. In such cases,
+                    automatic SRI generation from a URL is technically impossible due to browser security restrictions.<br><br>
+                    As a workaround, you can download the resource file manually and generate the SRI hash via file upload.<br>
+                    This keeps the process secure and transparent.
+                </dd>
+
+                <dt>⚙️&nbsp;Design philosophy</dt>
+                <dd>
+                    This is a developer-oriented utility for generating Subresource Integrity (SRI) hashes for CDN-hosted resources.<br><br>
+                    The purpose of this tool is not only to generate hash values, but also to help you understand how SRI works,
+                    why it matters, and what limitations exist when using it in real-world web environments.<br><br>
+                    This tool intentionally follows standard browser security rules and does not bypass them.
+                </dd>
+
+                <dt>📄&nbsp;Disclaimer</dt>
+                <dd>
+                    This tool retrieves CDN resources directly in your browser and generates SRI hash values locally. No data is stored or transmitted to any server.<br>
+                    Please note that the author is not responsible for any issues that may arise from the use of this tool.
+                </dd>
+
+                <dt>📜&nbsp;License</dt>
+                <dd>
+                    <ul>
+                        <li>MIT License</li>
+                        <li>CreativeCommons 4.0 BY-SA</li>
+                    </ul>
+                </dd>
+            </dl>
+        </fieldset>
     </main>
 
     <!-- フッター -->
     <footer class="d-flex">
         <div class="disclaimer">
             <p>
-                このツールはブラウザ上でCDNコンテンツを取得し、SRIのハッシュ値を生成します。生成されたすべては保存されず、すべてローカル処理で行われます。<br>
-                なお、本ツールの使用によりトラブルが発生した場合、私たちは一切の責任を負いません。
-            </p>
-            <p>
-                This tool retrieves CDN content on your browser and generates an SRI hash value. None of the generated data is stored; it is processed locally.<br>
-                Please note that we are not responsible for any problems that may arise from using this tool.
+
             </p>
         </div>
         <div class="ms-auto">
