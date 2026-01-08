@@ -32,6 +32,12 @@
     <link rel="icon" href="resources/icon-256.png" type="image/png" sizes="256x256">
     <link rel="apple-touch-icon" href="resources/icon-512.png" sizes="512x512">
 
+    <script>
+	    if(location.protocol !== 'https:'){
+		    alert('⚠️ A secure connection (HTTPS) is recommended.');
+	    }
+    </script>
+
     <!-- JSONはcompact/minifyしてくれないのでわざと1行に -->
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"sri-hasher","applicationCategory":"Utility","operatingSystem":"Web","description":"CDNサブリソース完全性のハッシュを生成。オフラインでも使えます。","url":"https://ennacx.github.io/sri-hasher/","image":"https://ennacx.github.io/sri-hasher/resources/ogp-banner.png","creator":{"@type":"Person","name":"ennacx"}}</script>
 </head>
@@ -125,10 +131,6 @@
     </footer>
 
     <script defer>
-	    if(location.protocol !== 'https:'){
-		    alert('⚠️ A secure connection (HTTPS) is recommended.');
-	    }
-
 	    function detectMissingFeatures() {
 		    const missing = [];
 

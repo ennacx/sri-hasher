@@ -135,18 +135,26 @@ footer ul.copy-links li i {
 #content #generate-field input#url::placeholder {
   color: #d5d8db;
 }
+#content #generate-field #selectMode {
+  border-bottom: 1px solid #909595;
+}
+#content #generate-field #selectMode li button.active {
+  background-color: #f2f6ff;
+  border: 1px solid #909595;
+  border-bottom: 1px solid #f2f6ff;
+}
 #content #generate-field #selectMode li button:not(.active) {
   color: #878787;
 }
 #content #generate-field #selectModeContent {
-  border-bottom: 1px solid #eaeaea;
-  border-right: 1px solid #eaeaea;
-  border-left: 1px solid #eaeaea;
+  background-color: #f2f6ff;
+  border: 1px solid #909595;
+  border-top: none;
   border-radius: 0 0 4px 4px;
   padding: 16px 8px 8px;
 }
 #content #readme-field {
-  border-top: 1px solid #eaeaea;
+  border-top: 1px solid #909595;
   margin-top: 48px;
   padding-top: 24px;
 }

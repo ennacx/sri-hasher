@@ -19,6 +19,8 @@
 // 既定色
 $bg_color: #f9fafb;
 $default_color: #2d8efd;
+$tab_bg_color: #f2f6ff;
+$tab_border_color: #909595;
 $light_color: #4aa3f8;
 $dark_color: rgba(45, 142, 253, 0.35);
 $font_color: #111827;
@@ -181,17 +183,30 @@ footer {
 		}
 
 		#selectMode {
+			border-bottom: 1px solid $tab_border_color;
+
 			li {
-				button:not(.active) {
-					color: #878787;
+				button {
+					&.active {
+						background-color: $tab_bg_color;
+						border: 1px solid $tab_border_color;
+						border-bottom: 1px solid $tab_bg_color;
+					}
+					&:not(.active) {
+						color: #878787;
+					}
 				}
 			}
 		}
 
 		#selectModeContent {
-			border-bottom: 1px solid #eaeaea;
-			border-right: 1px solid #eaeaea;
-			border-left: 1px solid #eaeaea;
+			background-color: $tab_bg_color;
+
+			border: 1px solid $tab_border_color;
+			border-top: none;
+			//border-bottom: 1px solid #eaeaea;
+			//border-right: 1px solid #eaeaea;
+			//border-left: 1px solid #eaeaea;
 			border-radius: 0 0 4px 4px;
 
 			padding: 16px 8px 8px;
@@ -199,7 +214,7 @@ footer {
 	}
 
 	#readme-field {
-		border-top: 1px solid #eaeaea;
+		border-top: 1px solid $tab_border_color;;
 		margin-top: 48px;
 		padding-top: 24px;
 
