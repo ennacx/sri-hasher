@@ -8,10 +8,17 @@ function updateNetworkStatus(){
 
 	const notice = document.getElementById('offline-notice');
 
-	if(navigator.onLine)
-		notice.classList.add('d-none');
-	else
-		notice.classList.remove('d-none');
+	if(notice){
+		if(navigator.onLine){
+			if(!notice.classList.contains('d-none')){
+				notice.classList.add('d-none');
+			}
+		} else{
+			notice.classList.remove('d-none');
+		}
+	} else{
+		console.error('Offline notice element not found');
+	}
 }
 
 /**

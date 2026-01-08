@@ -48,6 +48,10 @@
             <h1><a href="./">🛡️ Integrity SRI Hasher</a></h1>
             <h2>Generates CDN subresource integrity hashes. Works offline too.</h2>
 
+            <div id="offline-notice" class="alert alert-warning text-center py-2 d-none" role="alert">
+                🐣 Currently working in offline mode (using cache) 🐣
+            </div>
+
             <div class="mt-4">
                 <ul id="selectMode" class="nav nav-tabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -191,7 +195,7 @@
                 nodes = body ? Array.from(body.children) : Array.from(htmlEl.children);
             }
 
-            // まれに template.content が空っぽになるケースに備えてのDOMParserフォールバック (激レアケース)
+            // まれに`template.content`が空っぽになるケースに備えてのDOMParserフォールバック (超レアケース)
             if(nodes.length === 0){
                 const doc = new DOMParser().parseFromString(htmlText, 'text/html');
                 nodes = Array.from(doc.body?.children ?? []);
@@ -218,6 +222,21 @@
             nodes = nodes
                 // READMEタイトルはページ側にあるので <h1> を捨てる
                 .filter((n) => (n.tagName !== 'H1'))
+                .map((n) => {
+					if(n.tagName === 'P' && n.children.length >= 1){
+						// 外部リンク用の属性付与
+						n.children = Array.from(n.children).map((nn) => {
+							if(nn.tagName === 'A'){
+								nn.target = '_blank';
+								nn.rel = 'nofollow';
+                            }
+
+							return nn;
+                        });
+                    }
+
+					return n;
+                })
             ;
 
             // DDタグ用
