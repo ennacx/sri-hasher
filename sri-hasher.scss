@@ -29,6 +29,14 @@ $footer_height: 36px;
 $default_font: "Noto Sans JP", sans-serif;
 $mono_font: "Atkinson Hyperlegible Mono", monospace;
 
+@mixin icon_ext_link($color: "000") {
+	padding-right: 14px;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23#{$color}"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/></svg>');
+	background-size: 12px;
+	background-position: right 33.33%;
+	background-repeat: no-repeat;
+}
+
 body {
 	margin: 16px auto;
 
@@ -44,14 +52,6 @@ body {
 	body {
 		max-width: 960px;
 	}
-}
-
-@mixin icon_ext_link($color: "fff") {
-	padding-right: 14px;
-	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23#{$color}"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/></svg>');
-	background-size: 12px;
-	background-position: right 33.33%;
-	background-repeat: no-repeat;
 }
 
 a {
@@ -198,6 +198,11 @@ footer {
 					}
 					&:not(.active) {
 						color: #878787;
+
+						&:hover {
+							background-color: #f4f4f8;
+							border: 1px solid #c0c5c5;
+						}
 					}
 				}
 			}

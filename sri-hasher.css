@@ -146,6 +146,10 @@ footer ul.copy-links li i {
 #content #generate-field #selectMode li button:not(.active) {
   color: #878787;
 }
+#content #generate-field #selectMode li button:not(.active):hover {
+  background-color: #f4f4f8;
+  border: 1px solid #c0c5c5;
+}
 #content #generate-field #selectModeContent {
   background-color: #f2f6ff;
   border: 1px solid #909595;
