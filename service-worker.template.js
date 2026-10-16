@@ -1,53 +1,71 @@
-const SERVICE_CACHE_NAME = "sri-hasher-cache-{{GIT_HASH}}";
-const SERVICE_FILES_TO_CACHE = [
-	// Resources
-    "./",
-    "./index.html",
-	"./readme.html",
-    "./index.js",
-	"./reg-service-worker.js",
-    "./sri-hasher.css",
-    "./manifest.json",
-	"./favicon.ico",
-	"./resources/icon-256.png",
-	"./resources/icon-512.png",
-	"./vendor/bootstrap-5.3.8.min.css",
-	"./vendor/bootstrap-5.3.8.min.js",
-	"./vendor/jquery-3.7.1.min.js",
-	"./vendor/jquery-ui-1.14.1.min.js",
-	"./vendor/bootstrap-icons-1.13.1/bootstrap-icons.min.css",
-	// Fonts
-	"./vendor/fonts/AtkinsonHyperlegibleMono-Regular.woff2",
-	"./vendor/fonts/NotoSansJP-Regular.woff2",
-	"./vendor/bootstrap-icons-1.13.1/fonts/bootstrap-icons.woff2"
-];
+// Git hash: {{GIT_HASH}}
+
+const SERVICE_CACHE_PREFIX = "sri-hasher-cache-{{GIT_HASH}}";
+
+const OLD_HOME = new URL('./', self.location.href).href;
+const NEW_HOME = 'https://ennacx.github.io/web-technica/sri-hasher/';
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(SERVICE_CACHE_NAME)
-            .then((cache) => cache.addAll(SERVICE_FILES_TO_CACHE))
-    );
+    // 既存キャッシュを削除したりリダイレクト用HTMLで上書きしたりしない
+    self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // キャッシュがあればそれを返す、なければネットから取得
-                return response || fetch(event.request);
-            })
-    );
+    const request = event.request;
+
+    // ページ遷移以外は従来どおり処理する。
+    if(request.mode !== 'navigate'){
+        event.respondWith(caches.match(request).then((cached) => (cached || fetch(request))));
+
+        return;
+    }
+
+    // 旧アプリのトップページだけを対象に
+    const url = new URL(request.url);
+
+    if(url.href !== OLD_HOME && url.href !== `${OLD_HOME}index.html`){
+        return;
+    }
+
+    event.respondWith((async () => {
+        try{
+            // 旧サイトのネットワーク到達性を確認しキャッシュ経由ではないことを意図する
+            const response = await fetch(
+                new Request(OLD_HOME, {
+                    cache: 'no-store',
+                })
+            );
+
+            if(!response.ok){
+                throw new Error('Network unavailable');
+            }
+
+            // 通信できたので新サイトへ移動。
+            return Response.redirect(NEW_HOME, 302);
+
+        } catch(e){
+            // オフラインなら既存の旧アプリキャッシュを新しい順に探す
+            const cacheNames = (await caches.keys())
+                .filter((name) => name.startsWith(SERVICE_CACHE_PREFIX))
+                .reverse();
+
+            for(const cacheName of cacheNames){
+                const cached = (
+                    await caches.match(OLD_HOME, { cacheName }) ??
+                    await caches.match(`${OLD_HOME}index.html`, { cacheName })
+                );
+
+                if(cached){
+                    return cached;
+                }
+            }
+
+            return Response.error();
+        }
+    })());
 });
 
 self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys()
-            .then((keyList) => Promise.all(
-                keyList.map((key) => {
-                    if(key !== SERVICE_CACHE_NAME){
-                        return caches.delete(key);
-                    }
-                })
-            ))
-    );
+    // 既存キャッシュは保持
+    event.waitUntil(self.clients.claim());
 });
