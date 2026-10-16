@@ -1,6 +1,6 @@
 // Git hash: {{GIT_HASH}}
 
-const SERVICE_CACHE_PREFIX = "sri-hasher-cache-{{GIT_HASH}}";
+const SERVICE_CACHE_PREFIX = "sri-hasher-cache-";
 
 const OLD_HOME = new URL('./', self.location.href).href;
 const NEW_HOME = 'https://ennacx.github.io/web-technica/sri-hasher/';
