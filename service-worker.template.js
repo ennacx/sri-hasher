@@ -3,7 +3,7 @@
 const SERVICE_CACHE_PREFIX = "sri-hasher-cache-";
 
 const OLD_HOME = new URL('./', self.location.href).href;
-const NEW_HOME = 'https://ennacx.github.io/web-technica/sri-hasher/';
+const NEW_HOME = 'https://wexmetrica.com/sri-hasher/';
 
 self.addEventListener('install', (event) => {
     // 既存キャッシュを削除したりリダイレクト用HTMLで上書きしたりしない
